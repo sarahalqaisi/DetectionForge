@@ -1,0 +1,26 @@
+id: DF-WIN-006
+title: Security Tool Disable Attempt
+description: Detects command lines attempting to disable common Windows security controls.
+author: DetectionForge
+logsource:
+  category: windows
+level: critical
+mitre:
+  technique: T1562.001
+  name: Impair Defenses
+  tactic: Defense Evasion
+detection:
+  selection:
+    source: windows
+    event_type: process_create
+    command_line|regex: '(?i)(Set-MpPreference.*DisableRealtimeMonitoring|sc\s+stop\s+(WinDefend|Sense)|netsh\s+advfirewall\s+set.*off)'
+  condition: selection
+falsepositives: Approved endpoint troubleshooting under change control.
+test:
+  name: Disable Defender fixture
+  expected: true
+  event:
+    source: windows
+    event_type: process_create
+    process_name: powershell.exe
+    command_line: Set-MpPreference -DisableRealtimeMonitoring $true

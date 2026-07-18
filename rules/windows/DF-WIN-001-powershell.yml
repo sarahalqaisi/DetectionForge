@@ -1,0 +1,27 @@
+id: DF-WIN-001
+title: Suspicious PowerShell Command Line
+description: Detects PowerShell execution with common encoded or download-related arguments.
+author: DetectionForge
+logsource:
+  category: windows
+level: high
+mitre:
+  technique: T1059.001
+  name: PowerShell
+  tactic: Execution
+detection:
+  selection:
+    source: windows
+    event_type: process_create
+    process_name|contains: powershell
+    command_line|regex: '(?i)(-enc|-encodedcommand|downloadstring|invoke-webrequest|iwr )'
+  condition: selection
+falsepositives: Administrative automation and software deployment scripts.
+test:
+  name: Encoded PowerShell fixture
+  expected: true
+  event:
+    source: windows
+    event_type: process_create
+    process_name: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    command_line: powershell.exe -EncodedCommand ZABlAG0AbwA=

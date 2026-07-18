@@ -1,0 +1,10 @@
+[project]
+name = "detectionforge"
+version = "1.0.0"
+description = "Detection engineering and mini SOC platform"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

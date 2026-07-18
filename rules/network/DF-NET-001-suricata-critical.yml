@@ -1,0 +1,26 @@
+id: DF-NET-001
+title: High Confidence Suricata Alert
+description: Detects high-confidence network IDS alerts from Suricata.
+author: DetectionForge
+logsource:
+  category: network
+level: high
+mitre:
+  technique: T1190
+  name: Exploit Public-Facing Application
+  tactic: Initial Access
+detection:
+  selection:
+    source: suricata
+    event_type: alert
+    severity: [critical, high]
+  condition: selection
+falsepositives: Authorized scanning and penetration testing.
+test:
+  name: Suricata high alert fixture
+  expected: true
+  event:
+    source: suricata
+    event_type: alert
+    severity: high
+    source_ip: 203.0.113.77

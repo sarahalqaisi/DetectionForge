@@ -1,0 +1,29 @@
+id: DF-NET-003
+title: Unusual DNS Query Volume
+description: Detects a burst of DNS events from a single source.
+author: DetectionForge
+logsource:
+  category: network
+level: medium
+mitre:
+  technique: T1048
+  name: Exfiltration Over Alternative Protocol
+  tactic: Exfiltration
+detection:
+  selection:
+    source: suricata
+    event_type: dns
+  condition: selection
+  correlation:
+    type: count
+    group_by: [source_ip]
+    threshold: 10
+    timeframe: 1m
+falsepositives: DNS resolvers, software updates, and browser-heavy endpoints.
+test:
+  name: DNS event fixture
+  expected: true
+  event:
+    source: suricata
+    event_type: dns
+    source_ip: 10.10.10.25

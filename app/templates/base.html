@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>{{ title }} · {{ app_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="{{ url_for('static', path='js/app.js') }}" defer></script>
+</head>
+<body data-page="{{ request.url.path }}">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="/">
+        <span class="brand-mark">DF</span>
+        <span><strong>DetectionForge</strong><small>Detection Engineering</small></span>
+      </a>
+      <nav class="nav-list">
+        <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}"><span>◫</span> SOC Overview</a>
+        <a href="/events" class="nav-link {% if request.url.path.startswith('/events') %}active{% endif %}"><span>⌁</span> Live Events</a>
+        <a href="/alerts" class="nav-link {% if request.url.path.startswith('/alerts') %}active{% endif %}"><span>⚠</span> Alerts</a>
+        <a href="/incidents" class="nav-link {% if request.url.path.startswith('/incidents') %}active{% endif %}"><span>◆</span> Incidents</a>
+        <div class="nav-label">Detection Engineering</div>
+        <a href="/rules" class="nav-link {% if request.url.path.startswith('/rules') %}active{% endif %}"><span>⌘</span> Rule Studio</a>
+        <a href="/coverage" class="nav-link {% if request.url.path.startswith('/coverage') %}active{% endif %}"><span>▦</span> MITRE Coverage</a>
+        <a href="/quality" class="nav-link {% if request.url.path.startswith('/quality') %}active{% endif %}"><span>✓</span> Detection Quality</a>
+        <div class="nav-label">Operations</div>
+        <a href="/ingest" class="nav-link {% if request.url.path.startswith('/ingest') %}active{% endif %}"><span>⇧</span> Log Ingestion</a>
+        <a href="/audit" class="nav-link {% if request.url.path.startswith('/audit') %}active{% endif %}"><span>≡</span> Audit Log</a>
+        <a href="/docs" class="nav-link" target="_blank"><span>↗</span> API Docs</a>
+      </nav>
+      <div class="sidebar-foot">
+        <span class="status-dot"></span>
+        <div><strong>Engine Online</strong><small>FastAPI · SQLite</small></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <div>
+          <p class="eyebrow">Security Operations Workspace</p>
+          <h1>{{ title }}</h1>
+        </div>
+        <div class="top-actions">
+          <form method="post" action="/engine/run" class="loading-form">
+            <button class="btn btn-secondary" type="submit">Run Detection</button>
+          </form>
+          <a class="btn btn-primary" href="/ingest">Ingest Logs</a>
+        </div>
+      </header>
+
+      {% block content %}{% endblock %}
+      <footer class="footer">DetectionForge v1.0 · Defensive security research and portfolio project.</footer>
+    </main>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="loader-core"></div>
+    <p>Processing security telemetry…</p>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+</body>
+</html>

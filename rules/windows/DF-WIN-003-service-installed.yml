@@ -1,0 +1,24 @@
+id: DF-WIN-003
+title: New Windows Service Installed
+description: Detects installation of a new Windows service.
+author: DetectionForge
+logsource:
+  category: windows
+level: high
+mitre:
+  technique: T1543.003
+  name: Windows Service
+  tactic: Persistence / Privilege Escalation
+detection:
+  selection:
+    source: windows
+    event_type: service_installed
+  condition: selection
+falsepositives: Approved software installation and endpoint management tools.
+test:
+  name: Service installation fixture
+  expected: true
+  event:
+    source: windows
+    event_type: service_installed
+    hostname: WS-02

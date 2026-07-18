@@ -1,0 +1,34 @@
+id: DF-LNX-002
+title: Successful Login After Repeated Failures
+description: Detects a successful SSH login following failed attempts from the same source.
+author: DetectionForge
+status: experimental
+logsource:
+  category: linux_auth
+level: critical
+mitre:
+  technique: T1078
+  name: Valid Accounts
+  tactic: Defense Evasion / Persistence
+detection:
+  failed:
+    source: linux_auth
+    event_type: failed_login
+  success:
+    source: linux_auth
+    event_type: successful_login
+  condition: failed or success
+  correlation:
+    type: sequence
+    group_by: [source_ip, username]
+    sequence: [failed, success]
+    timeframe: 10m
+falsepositives: Legitimate users recovering from forgotten passwords.
+test:
+  name: Successful login component fixture
+  expected: true
+  event:
+    source: linux_auth
+    event_type: successful_login
+    source_ip: 203.0.113.10
+    username: root

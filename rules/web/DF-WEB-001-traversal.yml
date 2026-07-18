@@ -1,0 +1,24 @@
+id: DF-WEB-001
+title: Web Directory Traversal Attempt
+description: Detects requests containing directory traversal patterns.
+author: DetectionForge
+logsource:
+  category: web
+level: high
+mitre:
+  technique: T1190
+  name: Exploit Public-Facing Application
+  tactic: Initial Access
+detection:
+  selection:
+    source: nginx
+    event_type: directory_traversal
+  condition: selection
+falsepositives: Security scanners and malformed but benign requests.
+test:
+  name: Directory traversal fixture
+  expected: true
+  event:
+    source: nginx
+    event_type: directory_traversal
+    source_ip: 203.0.113.5

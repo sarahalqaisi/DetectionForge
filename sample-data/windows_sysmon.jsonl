@@ -1,0 +1,6 @@
+{"EventID":1,"UtcTime":"2026-07-19T10:20:01Z","Computer":"WS-01","User":"CORP\\analyst","Image":"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe","CommandLine":"powershell.exe -EncodedCommand ZABlAG0AbwA=","Message":"Process Create"}
+{"EventID":1102,"TimeCreated":"2026-07-19T10:21:00Z","Computer":"DC-01","SubjectUserName":"temp-admin","Message":"The audit log was cleared"}
+{"EventID":7045,"TimeCreated":"2026-07-19T10:22:00Z","Computer":"WS-02","Message":"A service was installed in the system"}
+{"EventID":4728,"TimeCreated":"2026-07-19T10:23:00Z","Computer":"DC-01","TargetUserName":"temp-admin","Message":"A member was added to a security-enabled global group"}
+{"EventID":1,"UtcTime":"2026-07-19T10:24:00Z","Computer":"WS-03","User":"CORP\\user1","Image":"C:\\Windows\\System32\\cmd.exe","CommandLine":"cmd.exe /c net user","Message":"Process Create"}
+{"EventID":1,"UtcTime":"2026-07-19T10:25:00Z","Computer":"WS-04","User":"CORP\\user2","Image":"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe","CommandLine":"Set-MpPreference -DisableRealtimeMonitoring $true","Message":"Process Create"}

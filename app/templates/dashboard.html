@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="metric-grid">
+  <article class="metric-card"><span class="metric-icon blue">⌁</span><div><small>Total Events</small><strong>{{ stats.total_events }}</strong><em>{{ stats.events_24h }} in last 24h</em></div></article>
+  <article class="metric-card"><span class="metric-icon amber">⚠</span><div><small>Active Alerts</small><strong>{{ stats.active_alerts }}</strong><em>New and investigating</em></div></article>
+  <article class="metric-card"><span class="metric-icon red">◆</span><div><small>Open Incidents</small><strong>{{ stats.open_incidents }}</strong><em>Requires analyst review</em></div></article>
+  <article class="metric-card"><span class="metric-icon green">✓</span><div><small>Detection Success</small><strong>{{ stats.detection_success_rate }}%</strong><em>Automated rule validation</em></div></article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel span-2">
+    <div class="panel-head"><div><p class="eyebrow">Telemetry</p><h2>Events over time</h2></div><span class="live-pill"><i></i> LIVE</span></div>
+    <div class="chart-wrap"><canvas id="eventsChart"></canvas></div>
+  </article>
+  <article class="panel">
+    <div class="panel-head"><div><p class="eyebrow">Risk</p><h2>Alerts by severity</h2></div></div>
+    <div class="chart-wrap compact"><canvas id="severityChart"></canvas></div>
+  </article>
+  <article class="panel">
+    <div class="panel-head"><div><p class="eyebrow">Sources</p><h2>Event distribution</h2></div></div>
+    <div class="chart-wrap compact"><canvas id="sourcesChart"></canvas></div>
+  </article>
+  <article class="panel span-2">
+    <div class="panel-head"><div><p class="eyebrow">ATT&CK</p><h2>Detection coverage by tactic</h2></div><a href="/coverage">View matrix →</a></div>
+    <div class="chart-wrap"><canvas id="mitreChart"></canvas></div>
+  </article>
+</section>
+
+<section class="split-grid">
+  <article class="panel">
+    <div class="panel-head"><div><p class="eyebrow">Latest findings</p><h2>Recent Alerts</h2></div><a href="/alerts">View all →</a></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Alert</th><th>Entity</th><th>Severity</th><th>MITRE</th></tr></thead><tbody>
+      {% for alert in recent_alerts %}
+        <tr><td><a class="table-title" href="/alerts/{{ alert.id }}">{{ alert.title }}</a><small>{{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}</small></td><td class="mono">{{ alert.entity_key or 'unknown' }}</td><td><span class="badge {{ alert.severity }}">{{ alert.severity }}</span></td><td class="mono">{{ alert.rule.mitre_technique or '—' }}</td></tr>
+      {% else %}<tr><td colspan="4" class="empty">No alerts yet. Ingest logs or load demo data.</td></tr>{% endfor %}
+      </tbody></table>
+    </div>
+  </article>
+  <article class="panel">
+    <div class="panel-head"><div><p class="eyebrow">Case queue</p><h2>Recent Incidents</h2></div><a href="/incidents">View all →</a></div>
+    <div class="incident-list">
+      {% for incident in recent_incidents %}
+      <a href="/incidents/{{ incident.id }}" class="incident-row">
+        <span class="score-ring {{ incident.severity }}">{{ incident.risk_score|round|int }}</span>
+        <div><strong>{{ incident.title }}</strong><small>{{ incident.entity_key or 'Unidentified entity' }}</small></div>
+        <span class="badge {{ incident.status }}">{{ incident.status }}</span>
+      </a>
+      {% else %}<div class="empty">No incidents generated yet.</div>{% endfor %}
+    </div>
+  </article>
+</section>
+{% endblock %}

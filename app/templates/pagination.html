@@ -1,0 +1,5 @@
+{% if pages > 1 %}<nav class="pagination">
+  {% if page > 1 %}<a href="?page={{ page-1 }}&q={{ q|default('') }}&severity={{ severity|default('') }}&status={{ status|default('') }}&source={{ source|default('') }}">← Previous</a>{% endif %}
+  <span>Page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}<a href="?page={{ page+1 }}&q={{ q|default('') }}&severity={{ severity|default('') }}&status={{ status|default('') }}&source={{ source|default('') }}">Next →</a>{% endif %}
+</nav>{% endif %}

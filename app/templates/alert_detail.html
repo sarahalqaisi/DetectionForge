@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="detail-hero panel">
+  <div><p class="eyebrow">Detection finding</p><h2>{{ alert.title }}</h2><p>{{ alert.rule.description }}</p><div class="tag-row"><span class="badge {{ alert.severity }}">{{ alert.severity }}</span><span class="badge {{ alert.status }}">{{ alert.status }}</span><span class="technique">{{ alert.rule.mitre_technique }} · {{ alert.rule.mitre_name }}</span></div></div>
+  <div class="score-block"><small>Risk score</small><strong>{{ alert.risk_score|round|int }}</strong><span>/100</span></div>
+</section>
+<section class="detail-grid">
+  <article class="panel"><div class="panel-head"><h2>Alert Context</h2></div><dl class="detail-list"><div><dt>Entity</dt><dd class="mono">{{ alert.entity_key or 'unknown' }}</dd></div><div><dt>Rule</dt><dd><a href="/rules/{{ alert.rule.id }}">{{ alert.rule.rule_key }}</a></dd></div><div><dt>MITRE Tactic</dt><dd>{{ alert.rule.mitre_tactic or 'Unmapped' }}</dd></div><div><dt>Created</dt><dd>{{ alert.created_at }}</dd></div><div><dt>Incident</dt><dd>{% if alert.incident %}<a href="/incidents/{{ alert.incident.id }}">#{{ alert.incident.id }}</a>{% else %}Unassigned{% endif %}</dd></div></dl></article>
+  <article class="panel"><div class="panel-head"><h2>Source Event</h2></div>{% if alert.event %}<dl class="detail-list"><div><dt>Event Type</dt><dd>{{ alert.event.event_type }}</dd></div><div><dt>Source</dt><dd>{{ alert.event.source }}</dd></div><div><dt>IP</dt><dd class="mono">{{ alert.event.source_ip or '—' }}</dd></div><div><dt>User / Host</dt><dd>{{ alert.event.username or alert.event.hostname or '—' }}</dd></div><div><dt>Message</dt><dd>{{ alert.event.message }}</dd></div></dl>{% else %}<div class="empty">Correlation alert references multiple events.</div>{% endif %}</article>
+</section>
+<section class="panel"><div class="panel-head"><h2>Detection Evidence</h2></div><pre class="code-block">{{ evidence|tojson(indent=2) }}</pre></section>
+{% endblock %}

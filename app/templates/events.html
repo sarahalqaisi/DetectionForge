@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <form class="filter-bar" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search IP, user, host, or message">
+    <select name="source"><option value="">All sources</option>{% for item in sources %}<option value="{{ item }}" {% if source == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+    <select name="severity"><option value="">All severities</option>{% for item in ['info','low','medium','high','critical'] %}<option value="{{ item }}" {% if severity == item %}selected{% endif %}>{{ item|title }}</option>{% endfor %}</select>
+    <button class="btn btn-secondary">Apply filters</button><a class="btn btn-ghost" href="/events">Reset</a>
+    <span class="result-count">{{ total }} events</span>
+  </form>
+  <div class="table-wrap">
+    <table><thead><tr><th>Time</th><th>Source</th><th>Event</th><th>Source IP</th><th>User / Host</th><th>Severity</th><th>Message</th></tr></thead><tbody id="eventsTableBody">
+    {% for event in events %}
+      <tr><td class="mono">{{ event.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td><td><span class="source-chip">{{ event.source }}</span></td><td>{{ event.event_type }}</td><td class="mono">{{ event.source_ip or '—' }}</td><td>{{ event.username or event.hostname or '—' }}</td><td><span class="badge {{ event.severity }}">{{ event.severity }}</span></td><td class="truncate" title="{{ event.message }}">{{ event.message }}</td></tr>
+    {% else %}<tr><td colspan="7" class="empty">No events match these filters.</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  {% include "pagination.html" %}
+</section>
+{% endblock %}

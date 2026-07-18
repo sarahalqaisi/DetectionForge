@@ -1,0 +1,29 @@
+id: DF-NET-002
+title: Multiple Network Connections to Distinct Ports
+description: Detects repeated network connection events from one source in a short window.
+author: DetectionForge
+logsource:
+  category: network
+level: medium
+mitre:
+  technique: T1046
+  name: Network Service Discovery
+  tactic: Discovery
+detection:
+  selection:
+    event_type: network_connection
+  condition: selection
+  correlation:
+    type: count
+    group_by: [source_ip]
+    threshold: 8
+    timeframe: 2m
+falsepositives: Monitoring, inventory, vulnerability assessment, and load balancers.
+test:
+  name: Network connection fixture
+  expected: true
+  event:
+    source: windows
+    event_type: network_connection
+    source_ip: 192.0.2.44
+    destination_port: 445

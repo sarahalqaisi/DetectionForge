@@ -1,0 +1,23 @@
+{"timestamp": "2026-07-19T10:30:00Z", "event_type": "alert", "src_ip": "203.0.113.77", "src_port": 49500, "dest_ip": "10.10.10.5", "dest_port": 443, "alert": {"signature": "ET WEB_SERVER Possible Exploit Attempt", "severity": 2, "category": "Attempted Administrator Privilege Gain"}}
+{"timestamp": "2026-07-19T10:31:00Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53000, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk0.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:01Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53001, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk1.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:02Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53002, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk2.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:03Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53003, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk3.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:04Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53004, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk4.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:05Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53005, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk5.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:06Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53006, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk6.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:07Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53007, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk7.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:08Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53008, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk8.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:09Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53009, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk9.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:10Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53010, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk10.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:31:11Z", "event_type": "dns", "src_ip": "10.10.10.25", "src_port": 53011, "dest_ip": "10.10.10.53", "dest_port": 53, "dns": {"rrname": "chunk11.example.net", "rrtype": "A"}}
+{"timestamp": "2026-07-19T10:32:00Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40000, "dest_ip": "10.10.10.20", "dest_port": 21, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:01Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40001, "dest_ip": "10.10.10.20", "dest_port": 22, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:02Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40002, "dest_ip": "10.10.10.20", "dest_port": 23, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:03Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40003, "dest_ip": "10.10.10.20", "dest_port": 25, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:04Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40004, "dest_ip": "10.10.10.20", "dest_port": 53, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:05Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40005, "dest_ip": "10.10.10.20", "dest_port": 80, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:06Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40006, "dest_ip": "10.10.10.20", "dest_port": 110, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:07Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40007, "dest_ip": "10.10.10.20", "dest_port": 139, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:08Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40008, "dest_ip": "10.10.10.20", "dest_port": 443, "proto": "TCP"}
+{"timestamp": "2026-07-19T10:32:09Z", "event_type": "network_connection", "src_ip": "192.0.2.44", "src_port": 40009, "dest_ip": "10.10.10.20", "dest_port": 445, "proto": "TCP"}

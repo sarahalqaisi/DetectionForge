@@ -1,0 +1,31 @@
+id: DF-LNX-001
+title: Multiple Failed SSH Logins
+description: Detects repeated SSH authentication failures from the same source IP.
+author: DetectionForge
+status: stable
+logsource:
+  category: linux_auth
+level: high
+mitre:
+  technique: T1110
+  name: Brute Force
+  tactic: Credential Access
+detection:
+  selection:
+    source: linux_auth
+    event_type: failed_login
+  condition: selection
+  correlation:
+    type: count
+    group_by: [source_ip]
+    threshold: 5
+    timeframe: 5m
+falsepositives: Password mistakes, vulnerability scanners, shared NAT gateways.
+test:
+  name: Failed SSH login fixture
+  expected: true
+  event:
+    source: linux_auth
+    event_type: failed_login
+    source_ip: 203.0.113.10
+    username: root

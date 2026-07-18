@@ -1,0 +1,24 @@
+id: DF-LNX-003
+title: New Local Account Created
+description: Detects creation of a local account on Linux.
+author: DetectionForge
+logsource:
+  category: linux_auth
+level: medium
+mitre:
+  technique: T1136.001
+  name: Local Account
+  tactic: Persistence
+detection:
+  selection:
+    source: linux_auth
+    event_type: user_created
+  condition: selection
+falsepositives: Approved system administration activity.
+test:
+  name: User creation fixture
+  expected: true
+  event:
+    source: linux_auth
+    event_type: user_created
+    message: useradd analyst-temp

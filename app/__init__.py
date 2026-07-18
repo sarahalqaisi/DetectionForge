@@ -1,0 +1,1 @@
+"""DetectionForge application package."""

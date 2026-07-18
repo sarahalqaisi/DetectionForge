@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Detection content</p><h2>{{ rules|length }} managed rules</h2></div><form method="post" action="/rules/import"><button class="btn btn-secondary">Sync YAML Rules</button></form></div>
+  <form class="filter-bar" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Search rule, ID, or MITRE technique"><select name="level"><option value="">All levels</option>{% for item in ['low','medium','high','critical'] %}<option value="{{ item }}" {% if level == item %}selected{% endif %}>{{ item|title }}</option>{% endfor %}</select><button class="btn btn-secondary">Filter</button><a class="btn btn-ghost" href="/rules">Reset</a></form>
+  <div class="rule-grid">{% for rule in rules %}<article class="rule-card"><div class="rule-top"><span class="mono rule-id">{{ rule.rule_key }}</span><span class="badge {{ 'enabled' if rule.enabled else 'disabled' }}">{{ 'enabled' if rule.enabled else 'disabled' }}</span></div><h3><a href="/rules/{{ rule.id }}">{{ rule.title }}</a></h3><p>{{ rule.description }}</p><div class="tag-row"><span class="badge {{ rule.level }}">{{ rule.level }}</span><span class="technique">{{ rule.mitre_technique or 'Unmapped' }}</span><span class="source-chip">{{ rule.source_category }}</span></div><footer><span>v{{ rule.version }}</span><form method="post" action="/rules/{{ rule.id }}/toggle"><button class="link-btn">{{ 'Disable' if rule.enabled else 'Enable' }}</button></form></footer></article>{% else %}<div class="empty">No rules imported.</div>{% endfor %}</div>
+</section>
+{% endblock %}

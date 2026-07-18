@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="coverage-legend panel"><div><span class="coverage-dot passed"></span> Tested & passed</div><div><span class="coverage-dot untested"></span> Rule exists, not tested</div><div><span class="coverage-dot failed"></span> Test failed</div><div><span class="coverage-dot disabled"></span> Disabled</div></section>
+<section class="panel"><div class="panel-head"><div><p class="eyebrow">MITRE ATT&CK</p><h2>Detection Coverage Matrix</h2></div><span>{{ coverage|length }} techniques mapped</span></div><div class="coverage-grid">{% for row in coverage %}<a href="/rules/{{ row.rule.id }}" class="coverage-cell {{ row.status }}"><span class="mono">{{ row.rule.mitre_technique or '—' }}</span><strong>{{ row.rule.mitre_name or row.rule.title }}</strong><small>{{ row.rule.mitre_tactic or 'Unmapped' }}</small><em>{{ row.tests }} tests · {{ row.pass_rate }}%</em></a>{% endfor %}</div></section>
+{% endblock %}

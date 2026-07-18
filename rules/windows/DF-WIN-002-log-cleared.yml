@@ -1,0 +1,24 @@
+id: DF-WIN-002
+title: Windows Security Log Cleared
+description: Detects clearing of the Windows Security event log.
+author: DetectionForge
+logsource:
+  category: windows
+level: critical
+mitre:
+  technique: T1070.001
+  name: Clear Windows Event Logs
+  tactic: Defense Evasion
+detection:
+  selection:
+    source: windows
+    event_type: security_log_cleared
+  condition: selection
+falsepositives: Approved troubleshooting with documented change control.
+test:
+  name: Event log cleared fixture
+  expected: true
+  event:
+    source: windows
+    event_type: security_log_cleared
+    hostname: WS-01

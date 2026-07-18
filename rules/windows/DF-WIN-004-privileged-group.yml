@@ -1,0 +1,24 @@
+id: DF-WIN-004
+title: Account Added to Privileged Group
+description: Detects a user being added to a privileged local or domain group.
+author: DetectionForge
+logsource:
+  category: windows
+level: high
+mitre:
+  technique: T1136.001
+  name: Local Account
+  tactic: Persistence
+detection:
+  selection:
+    source: windows
+    event_type: user_added_to_privileged_group
+  condition: selection
+falsepositives: Approved onboarding or role changes.
+test:
+  name: Privileged group fixture
+  expected: true
+  event:
+    source: windows
+    event_type: user_added_to_privileged_group
+    username: temp-admin

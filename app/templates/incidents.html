@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <form class="filter-bar" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Search incident, entity, or summary"><select name="severity"><option value="">All severities</option>{% for item in ['low','medium','high','critical'] %}<option value="{{ item }}" {% if severity == item %}selected{% endif %}>{{ item|title }}</option>{% endfor %}</select><select name="status"><option value="">All statuses</option>{% for item in ['open','investigating','contained','closed'] %}<option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item|title }}</option>{% endfor %}</select><button class="btn btn-secondary">Apply filters</button><a class="btn btn-ghost" href="/incidents">Reset</a><span class="result-count">{{ total }} incidents</span></form>
+  <div class="card-list">{% for incident in incidents %}<a href="/incidents/{{ incident.id }}" class="case-card"><span class="score-ring {{ incident.severity }}">{{ incident.risk_score|round|int }}</span><div class="case-body"><div class="case-title"><strong>#{{ incident.id }} · {{ incident.title }}</strong><span class="badge {{ incident.status }}">{{ incident.status }}</span></div><p>{{ incident.summary }}</p><small>{{ incident.entity_key or 'unknown entity' }} · Updated {{ incident.updated_at.strftime('%Y-%m-%d %H:%M') }}</small></div><span class="chevron">›</span></a>{% else %}<div class="empty">No incidents match these filters.</div>{% endfor %}</div>{% include "pagination.html" %}
+</section>
+{% endblock %}

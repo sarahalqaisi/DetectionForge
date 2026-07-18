@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="detail-hero panel"><div><p class="eyebrow">{{ rule.rule_key }} · Version {{ rule.version }}</p><h2>{{ rule.title }}</h2><p>{{ rule.description }}</p><div class="tag-row"><span class="badge {{ rule.level }}">{{ rule.level }}</span><span class="technique">{{ rule.mitre_technique }} · {{ rule.mitre_name }}</span><span class="source-chip">{{ rule.source_category }}</span></div></div><div class="quality-stat"><small>Test history</small><strong>{{ tests|length }}</strong><span>{{ tests|selectattr('passed')|list|length }} passed</span></div></section>
+<section class="detail-grid wide-left">
+  <article class="panel"><div class="panel-head"><div><p class="eyebrow">Rule Studio</p><h2>YAML Detection Rule</h2></div></div><form method="post" action="/rules/{{ rule.id }}" class="loading-form"><textarea class="code-editor" name="yaml_content" rows="30" spellcheck="false">{{ rule.yaml_content }}</textarea><div class="editor-actions"><button class="btn btn-primary">Validate & Save</button><span>Changes increment the rule version and are recorded in the audit log.</span></div></form></article>
+  <aside class="stack-col">
+    <article class="panel"><div class="panel-head"><h2>Test Rule</h2></div><form method="post" action="/rules/{{ rule.id }}/test" class="stack-form"><input name="test_name" value="Manual validation" placeholder="Test name"><label class="check-row"><input type="checkbox" name="expected_match" value="true" checked> Expected to match</label><textarea name="sample_event" rows="12" spellcheck="false" class="code-editor small">{
+  "source": "{{ rule.source_category }}",
+  "event_type": "example",
+  "source_ip": "203.0.113.50"
+}</textarea><button class="btn btn-secondary">Run Test</button></form></article>
+    <article class="panel"><div class="panel-head"><h2>Quality History</h2></div><div class="test-list">{% for test in tests %}<div class="test-row"><span class="test-icon {{ 'pass' if test.passed else 'fail' }}">{{ '✓' if test.passed else '×' }}</span><div><strong>{{ test.test_name }}</strong><small>{{ 'Matched' if test.actual_match else 'Did not match' }} · {{ '%.3f'|format(test.execution_ms) }} ms</small></div></div>{% else %}<div class="empty">No tests recorded.</div>{% endfor %}</div></article>
+  </aside>
+</section>
+{% endblock %}

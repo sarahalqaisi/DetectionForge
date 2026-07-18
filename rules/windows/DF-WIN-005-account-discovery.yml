@@ -1,0 +1,26 @@
+id: DF-WIN-005
+title: Account Discovery Command
+description: Detects command lines commonly used to enumerate users or groups.
+author: DetectionForge
+logsource:
+  category: windows
+level: medium
+mitre:
+  technique: T1087
+  name: Account Discovery
+  tactic: Discovery
+detection:
+  selection:
+    source: windows
+    event_type: process_create
+    command_line|regex: '(?i)(net\s+(user|group)|whoami\s+/all|Get-LocalUser)'
+  condition: selection
+falsepositives: Help desk diagnostics and inventory scripts.
+test:
+  name: Account discovery fixture
+  expected: true
+  event:
+    source: windows
+    event_type: process_create
+    process_name: cmd.exe
+    command_line: cmd.exe /c net user
