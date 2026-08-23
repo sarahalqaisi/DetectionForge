@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: detectionforge
       POSTGRES_USER: detectionforge
-      POSTGRES_PASSWORD: detectionforge-dev-only
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U detectionforge"]
       interval: 5s
@@ -19,8 +19,8 @@ services:
       - "8000:8000"
     environment:
       APP_ENV: production
-      SECRET_KEY: replace-this-in-production
-      DATABASE_URL: postgresql+psycopg://detectionforge:detectionforge-dev-only@db:5432/detectionforge
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a strong random value}
+      DATABASE_URL: postgresql+psycopg://detectionforge:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/detectionforge
       HOST: 0.0.0.0
       PORT: 8000
     depends_on:

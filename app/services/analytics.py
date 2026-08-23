@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.models import Alert, DetectionRule, DetectionTest, Event, Incident
 from app.services.mitre import TACTIC_ORDER
+from app.services.detection import parse_rule
+from app.services.mitre import technique_ids, technique_info
 
 
 def dashboard_stats(db: Session) -> dict:
@@ -78,3 +80,17 @@ def coverage_matrix(db: Session) -> list[dict]:
         )
     order = {tactic: index for index, tactic in enumerate(TACTIC_ORDER)}
     return sorted(rows, key=lambda row: (order.get(row["rule"].mitre_tactic or "", 999), row["rule"].mitre_technique or ""))
+
+
+def attack_coverage(db: Session) -> dict:
+    rules = list(db.scalars(select(DetectionRule).where(DetectionRule.enabled.is_(True))).all())
+    mappings: dict[str, list[str]] = {}
+    for rule in rules:
+        mappings[rule.rule_key] = technique_ids(parse_rule(rule.yaml_content))
+    technique_set = sorted({technique for values in mappings.values() for technique in values})
+    return {
+        "rules": mappings,
+        "techniques": [{"id": item, **technique_info(item)} for item in technique_set],
+        "mapped_rules": sum(bool(values) for values in mappings.values()),
+        "total_rules": len(rules),
+    }

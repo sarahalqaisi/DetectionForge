@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Replaced dynamic condition evaluation with a bounded boolean parser.
+- Added a documented Sigma-compatible subset and strict rule/correlation validation.
+- Added positive/negative fixture testing, JSON CI output, and ATT&CK coverage API data.
+- Corrected correlation replay deduplication and documented alert fingerprints.
+- Hardened uploads, errors, headers, secrets, dependencies, Actions, and containers.
+
 ## 1.0.0 — Initial Portfolio Release
 
 - Added FastAPI application and responsive dark SOC dashboard.

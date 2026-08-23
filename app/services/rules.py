@@ -9,18 +9,26 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.models import DetectionRule
 from app.services.detection import parse_rule
-from app.services.mitre import technique_info
+from app.services.mitre import technique_ids, technique_info
 
 
 def import_rules(db: Session, rules_dir: Path | None = None) -> tuple[int, int]:
     root = rules_dir or settings.rules_dir
     created = 0
     updated = 0
+    loaded = []
     for path in sorted(root.rglob("*.yml")) + sorted(root.rglob("*.yaml")):
         content = path.read_text(encoding="utf-8")
         data = parse_rule(content)
+        loaded.append((path, content, data))
+    ids = [data["id"] for _, _, data in loaded]
+    duplicates = sorted({rule_id for rule_id in ids if ids.count(rule_id) > 1})
+    if duplicates:
+        raise ValueError(f"Duplicate rule ids: {', '.join(duplicates)}")
+    for path, content, data in loaded:
         rule_key = str(data.get("id") or path.stem)
-        technique = str(data.get("mitre", {}).get("technique") or "") or None
+        techniques = technique_ids(data)
+        technique = techniques[0] if techniques else None
         mitre = technique_info(technique)
         existing = db.scalar(select(DetectionRule).where(DetectionRule.rule_key == rule_key))
         payload = {
@@ -51,7 +59,10 @@ def import_rules(db: Session, rules_dir: Path | None = None) -> tuple[int, int]:
 
 def save_rule(db: Session, rule: DetectionRule, content: str) -> DetectionRule:
     data = parse_rule(content)
-    technique = str((data.get("mitre") or {}).get("technique") or "") or None
+    if data["id"] != rule.rule_key:
+        raise ValueError("Rule id cannot be changed in the editor")
+    techniques = technique_ids(data)
+    technique = techniques[0] if techniques else None
     mitre = technique_info(technique)
     rule.title = str(data.get("title"))
     rule.description = str(data.get("description", ""))

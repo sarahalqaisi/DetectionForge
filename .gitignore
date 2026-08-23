@@ -16,6 +16,7 @@ uploads/*
 reports/*
 !reports/.gitkeep
 *.log
+!sample-data/*.log
 .DS_Store
 .idea/
 .vscode/

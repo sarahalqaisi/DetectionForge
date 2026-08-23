@@ -1,39 +1,41 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import yaml
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Alert, DetectionRule, DetectionTest, Event
+from app.services.conditions import evaluate_condition
+from app.services.rule_validation import parse_and_validate_rule
 
 
 SEVERITY_SCORE = {"info": 10, "low": 25, "medium": 50, "high": 75, "critical": 95}
 
 
 def parse_rule(content: str) -> dict[str, Any]:
-    parsed = yaml.safe_load(content)
-    if not isinstance(parsed, dict):
-        raise ValueError("Rule must be a YAML object")
-    if not parsed.get("title") or not parsed.get("detection"):
-        raise ValueError("Rule requires title and detection")
-    return parsed
+    return parse_and_validate_rule(content)
 
 
 def _event_value(event: dict[str, Any], field: str) -> Any:
-    current: Any = event
-    for part in field.split("."):
+    parts = field.split(".")
+    if parts[0] == "raw_data":
+        current: Any = event.get("raw_data", {})
+        parts = parts[1:]
+    elif parts[0] in event:
+        current = event
+    else:
+        current = event.get("raw_data", {})
+    for part in parts:
         if isinstance(current, dict):
             if part in current:
                 current = current[part]
-            elif isinstance(current.get("raw_data"), dict) and part in current["raw_data"]:
-                current = current["raw_data"][part]
             else:
                 return None
         else:
@@ -56,7 +58,11 @@ def _compare(actual: Any, expected: Any, operator: str) -> bool:
         return actual_text.lower().startswith(expected_text.lower())
     if operator == "endswith":
         return actual_text.lower().endswith(expected_text.lower())
-    if operator == "regex":
+    if operator in {"re", "regex"}:
+        if len(expected_text) > 256 or len(actual_text) > 16_384:
+            return False
+        if re.search(r"(\([^)]*[+*][^)]*\))[+*{]", expected_text):
+            return False
         try:
             return bool(re.search(expected_text, actual_text, re.I))
         except re.error:
@@ -107,18 +113,7 @@ def match_event(rule: dict[str, Any], event: dict[str, Any]) -> bool:
     if not selections:
         return False
     results = {name: _selection_match(event, selection) for name, selection in selections.items()}
-    if condition in results:
-        return results[condition]
-    expression = condition
-    for name, result in sorted(results.items(), key=lambda item: len(item[0]), reverse=True):
-        expression = re.sub(rf"\b{re.escape(name)}\b", str(result), expression)
-    expression = expression.replace(" AND ", " and ").replace(" OR ", " or ").replace(" NOT ", " not ")
-    if not re.fullmatch(r"[TrueFalsandornot()\s]+", expression):
-        return all(results.values())
-    try:
-        return bool(eval(expression, {"__builtins__": {}}, {}))
-    except Exception:
-        return all(results.values())
+    return evaluate_condition(condition, results)
 
 
 def event_to_dict(event: Event) -> dict[str, Any]:
@@ -147,6 +142,8 @@ def event_to_dict(event: Event) -> dict[str, Any]:
 
 def entity_key(event: dict[str, Any], group_by: list[str] | None = None) -> str:
     fields = group_by or ["source_ip", "hostname", "username"]
+    if group_by and any(event.get(field) in (None, "") for field in fields):
+        return ""
     parts = [str(event.get(field)) for field in fields if event.get(field)]
     return "|".join(parts) if parts else "unknown"
 
@@ -175,6 +172,8 @@ def _alert_exists(db: Session, rule_id: int, event_id: int | None, key: str) -> 
 def _build_alert(rule_model: DetectionRule, event: Event | None, key: str, evidence: dict[str, Any]) -> Alert:
     level = (rule_model.level or "medium").lower()
     score = SEVERITY_SCORE.get(level, 50)
+    fingerprint = alert_fingerprint(rule_model.rule_key, key, event.id if event else None)
+    evidence = {**evidence, "alert_fingerprint": fingerprint}
     return Alert(
         event_id=event.id if event else None,
         rule_id=rule_model.id,
@@ -186,11 +185,23 @@ def _build_alert(rule_model: DetectionRule, event: Event | None, key: str, evide
     )
 
 
+def alert_fingerprint(rule_key: str, entity: str, terminal_event_id: int | None) -> str:
+    raw = json.dumps([rule_key, entity, terminal_event_id], separators=(",", ":")).encode()
+    return hashlib.sha256(raw).hexdigest()
+
+
 def evaluate_rule(db: Session, rule_model: DetectionRule, events: list[Event]) -> list[Alert]:
     rule = parse_rule(rule_model.yaml_content)
     detection = rule.get("detection") or {}
     correlation = detection.get("correlation") or {}
-    matched = [(event, event_to_dict(event)) for event in events if match_event(rule, event_to_dict(event))]
+    unique_events = []
+    seen_events = set()
+    for event in events:
+        identity = ("database", event.id) if event.id is not None else ("object", id(event))
+        if identity not in seen_events:
+            seen_events.add(identity)
+            unique_events.append(event)
+    matched = [(event, event_to_dict(event)) for event in unique_events if match_event(rule, event_to_dict(event))]
     alerts: list[Alert] = []
 
     if correlation:
@@ -200,7 +211,9 @@ def evaluate_rule(db: Session, rule_model: DetectionRule, events: list[Event]) -
         timeframe = _parse_timeframe(correlation.get("timeframe", "5m"))
         grouped: dict[str, list[tuple[Event, dict[str, Any]]]] = defaultdict(list)
         for pair in matched:
-            grouped[entity_key(pair[1], group_by)].append(pair)
+            key = entity_key(pair[1], group_by)
+            if key:
+                grouped[key].append(pair)
         for key, pairs in grouped.items():
             pairs.sort(key=lambda item: item[0].timestamp)
             if correlation_type == "sequence":
@@ -227,7 +240,7 @@ def evaluate_rule(db: Session, rule_model: DetectionRule, events: list[Event]) -
                                 complete = False
                                 break
                             matched_events.append(found)
-                        if complete and not _alert_exists(db, rule_model.id, None, key):
+                        if complete and not _alert_exists(db, rule_model.id, matched_events[-1].id, key):
                             evidence = {
                                 "type": "sequence",
                                 "stages": stages,
@@ -242,7 +255,7 @@ def evaluate_rule(db: Session, rule_model: DetectionRule, events: list[Event]) -
                 window_start = event.timestamp - timeframe
                 window = [pair for pair in pairs[: index + 1] if pair[0].timestamp >= window_start]
                 if correlation_type == "count" and len(window) >= threshold:
-                    if not _alert_exists(db, rule_model.id, None, key):
+                    if not _alert_exists(db, rule_model.id, event.id, key):
                         evidence = {
                             "type": "correlation",
                             "count": len(window),
