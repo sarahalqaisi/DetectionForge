@@ -34,9 +34,16 @@ def test_seed_and_dashboard():
 
 def test_api_and_pages():
     reset_data()
-    for path in ("/events", "/alerts", "/incidents", "/rules", "/coverage", "/quality", "/ingest", "/audit", "/api/health", "/api/stats"):
+    for path in ("/events", "/alerts", "/incidents", "/rules", "/coverage", "/quality", "/ingest", "/audit", "/api/health", "/api/stats", "/api/attack-coverage"):
         response = client.get(path)
         assert response.status_code == 200, path
+    coverage = client.get("/api/attack-coverage").json()
+    assert coverage["total_rules"] == 15
+    assert any(item["id"] == "T1059.001" for item in coverage["techniques"])
+    health = client.get("/api/health")
+    assert health.headers["cache-control"] == "no-store"
+    assert health.headers["x-content-type-options"] == "nosniff"
+    assert health.headers["x-frame-options"] == "DENY"
 
 
 def test_reports():
@@ -73,3 +80,17 @@ def test_log_upload_pipeline():
     )
     assert response.status_code == 303
     assert "Ingested+1+events" in response.headers["location"]
+
+
+def test_upload_error_does_not_leak_parser_or_local_details():
+    reset_data()
+    response = client.post(
+        "/ingest",
+        files={"file": ("private.json", b'[{"secret":"value"}', "application/json")},
+        data={"source_type": "auto"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "The uploaded telemetry could not be parsed"}
+    assert "secret" not in response.text
+    assert "/home/" not in response.text
+    assert response.headers["cache-control"] == "no-store"

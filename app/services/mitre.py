@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 MITRE_TECHNIQUES = {
     "T1110": {"name": "Brute Force", "tactic": "Credential Access"},
     "T1078": {"name": "Valid Accounts", "tactic": "Defense Evasion / Persistence"},
@@ -37,3 +39,15 @@ def technique_info(technique_id: str | None) -> dict[str, str]:
     if not technique_id:
         return {"name": "Unmapped", "tactic": "Unmapped"}
     return MITRE_TECHNIQUES.get(technique_id, {"name": "Custom Mapping", "tactic": "Unmapped"})
+
+
+def technique_ids(rule: dict) -> list[str]:
+    values = []
+    explicit = (rule.get("mitre") or {}).get("technique")
+    if explicit:
+        values.append(str(explicit).upper())
+    for tag in rule.get("tags") or []:
+        match = re.fullmatch(r"attack\.(t\d{4}(?:\.\d{3})?)", str(tag), re.I)
+        if match:
+            values.append(match.group(1).upper())
+    return list(dict.fromkeys(values))

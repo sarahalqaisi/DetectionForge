@@ -13,16 +13,16 @@ Result:
 - Random secret generated in local `.env`.
 - Database initialized successfully.
 - 15 YAML rules imported.
-- 41 safe demo events ingested.
+- 40 safe demo events ingested.
 - 15 alerts generated.
-- 14 incidents correlated.
+- 13 incidents correlated.
 - 15 detection-quality tests recorded.
 
 ## Automated Test Suite
 
 ```text
 ..........                                                               [100%]
-10 passed
+32 passed
 ```
 
 Coverage includes:
@@ -37,11 +37,16 @@ Coverage includes:
 - Log upload and immediate detection pipeline.
 - Rule validation through the API.
 - PDF, CSV, and JSON incident reports.
+- Safe condition parsing with malformed, unknown, nested, and malicious inputs.
+- Strict rule schema, modifier, duplicate-ID, and correlation validation.
+- Threshold boundaries, grouping, sequence ordering, incomplete sequences, and replay deduplication.
+- Nested event-field collision precedence and regex safety limits.
+- Security headers and generic ingestion errors.
 
 ## Content Validation
 
 - YAML rule files parsed: **15/15**.
-- Rule fixtures passed: **15/15**.
+- Rule fixtures passed: **16/16** across positive and negative expectations.
 - Python compile check: **passed**.
 - SQLite integrity check: **ok**.
 - `debug=True` scan: **no matches**.

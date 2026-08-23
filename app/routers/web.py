@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import secrets
 import shutil
 from pathlib import Path
 from typing import Any
@@ -14,7 +16,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.config import BASE_DIR, settings
 from app.database import get_db
 from app.models import Alert, AuditLog, DetectionRule, DetectionTest, Event, Incident, IncidentNote
-from app.services.analytics import chart_data, coverage_matrix, dashboard_stats
+from app.services.analytics import attack_coverage, chart_data, coverage_matrix, dashboard_stats
 from app.services.correlation import correlate_alerts, similar_incidents
 from app.services.detection import parse_rule, run_detection, test_rule
 from app.services.ingestion import ingest_file
@@ -23,6 +25,7 @@ from app.services.rules import import_rules, save_rule
 
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
 
 
@@ -147,6 +150,8 @@ def incident_detail(incident_id: int, request: Request, db: Session = Depends(ge
     )
     if not incident:
         raise HTTPException(404, "Incident not found")
+    if status not in {"open", "investigating", "contained", "closed"} or severity not in {"info", "low", "medium", "high", "critical"}:
+        raise HTTPException(400, "Invalid incident status or severity")
     similar = similar_incidents(db, incident)
     evidence = {alert.id: parse_evidence(alert) for alert in incident.alerts}
     return templates.TemplateResponse(request=request, name="incident_detail.html", context=context(request, title=f"Incident #{incident.id}", incident=incident, similar=similar, evidence=evidence))
@@ -210,8 +215,9 @@ def rule_update(rule_id: int, yaml_content: str = Form(...), db: Session = Depen
         raise HTTPException(404, "Rule not found")
     try:
         save_rule(db, rule, yaml_content)
-    except Exception as exc:
-        return RedirectResponse(f"/rules/{rule_id}?toast=Rule+validation+failed%3A+{str(exc)}", status_code=303)
+    except ValueError:
+        logger.exception("Rule validation failed for rule id %s", rule_id)
+        return RedirectResponse(f"/rules/{rule_id}?toast=Rule+validation+failed", status_code=303)
     db.add(AuditLog(action="rule_updated", entity_type="detection_rule", entity_id=str(rule.id), details=json.dumps({"version": rule.version}), actor="analyst"))
     db.commit()
     return RedirectResponse(f"/rules/{rule_id}?toast=Rule+saved", status_code=303)
@@ -245,8 +251,9 @@ def rule_test(
             raise ValueError("JSON object required")
         result = test_rule(db, rule, payload, expected_match, test_name)
         message = "Test+passed" if result.passed else "Test+failed"
-    except Exception as exc:
-        message = f"Invalid+test%3A+{str(exc)}"
+    except (ValueError, TypeError):
+        logger.exception("Manual rule test input failed for rule id %s", rule_id)
+        message = "Invalid+test+input"
     return RedirectResponse(f"/rules/{rule_id}?toast={message}", status_code=303)
 
 
@@ -275,7 +282,7 @@ def ingest_upload(
     db: Session = Depends(get_db),
 ):
     filename = Path(file.filename or "upload.log").name
-    target = settings.uploads_dir / filename
+    target = settings.uploads_dir / f"{secrets.token_hex(8)}-{filename}"
     max_bytes = settings.max_upload_mb * 1024 * 1024
     total = 0
     with target.open("wb") as output:
@@ -290,9 +297,10 @@ def ingest_upload(
         events = ingest_file(db, target, source_type, actor="web-upload")
         alerts = run_detection(db, events) if run_engine else []
         incidents = correlate_alerts(db) if run_engine else []
-    except Exception as exc:
+    except (ValueError, OSError, json.JSONDecodeError):
+        logger.exception("Ingestion failed for sanitized filename %s", filename)
         target.unlink(missing_ok=True)
-        raise HTTPException(400, f"Could not parse file: {exc}") from exc
+        raise HTTPException(400, "The uploaded telemetry could not be parsed") from None
     target.unlink(missing_ok=True)
     return RedirectResponse(f"/ingest?toast=Ingested+{len(events)}+events%2C+{len(alerts)}+alerts%2C+{len(incidents)}+incidents", status_code=303)
 
@@ -345,6 +353,11 @@ def health():
 @router.get("/api/stats")
 def stats_api(db: Session = Depends(get_db)):
     return {"summary": dashboard_stats(db), "charts": chart_data(db)}
+
+
+@router.get("/api/attack-coverage")
+def attack_coverage_api(db: Session = Depends(get_db)):
+    return attack_coverage(db)
 
 
 @router.get("/api/events/live")

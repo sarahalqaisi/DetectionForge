@@ -25,3 +25,12 @@ test:
     event_type: process_create
     process_name: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
     command_line: powershell.exe -EncodedCommand ZABlAG0AbwA=
+tests:
+  negative:
+    - name: Benign command shell fixture
+      event:
+        id: benign-command-1
+        source: windows
+        event_type: process_create
+        process_name: cmd.exe
+        command_line: cmd.exe /c whoami

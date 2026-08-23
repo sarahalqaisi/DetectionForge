@@ -1,27 +1,31 @@
-<p align="center">
-  <img src="docs/banner.svg" alt="DetectionForge banner" width="100%">
-</p>
-
 # DetectionForge
 
-> **Open-source Detection Engineering and Mini SOC Platform**
+> **Detection engineering and Sigma-compatible rule testing platform for SOC teams.**
 
-DetectionForge is a defensive security platform for ingesting and normalizing security telemetry, executing YAML-based detection rules, correlating related alerts, managing incidents, validating detection quality, and visualizing MITRE ATT&CK coverage.
-
-It is designed as a portfolio-ready cybersecurity project that demonstrates practical skills in SOC workflows, log analysis, detection engineering, incident response, API development, data modeling, automated testing, and secure deployment.
-
-
-## Dashboard Preview
-
-<p align="center">
-  <img src="docs/screenshots/dashboard-preview.svg" alt="DetectionForge SOC dashboard preview" width="100%">
+<p>
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB">
+  <img alt="Sigma-compatible subset" src="https://img.shields.io/badge/Sigma-compatible%20subset-6f42c1">
+  <img alt="Rules" src="https://img.shields.io/badge/Rules-15-238636">
+  <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-blue">
 </p>
+
+DetectionForge turns normalized security events into deterministic rule matches, count or sequence detections, deduplicated alerts, ATT&CK mappings, and fixture-based quality evidence. It implements a documented Sigma-compatible subset; it does not claim full Sigma compliance or production SIEM readiness.
+
+![DetectionForge dashboard preview](docs/screenshots/dashboard-preview.svg)
+
+## Why this matters
+
+Detection rules are only useful when analysts can validate what they match, what they reject, and how correlation behaves at boundary conditions. DetectionForge makes that lifecycle visible and reproducible without executing rule content as code.
+
+- 15 validated starter rules across Linux, Windows, network, and web telemetry.
+- Positive and negative fixture execution with structured JSON output for CI.
+- Safe boolean condition parsing with no `eval()`, `exec()`, or dynamic code execution.
 
 ## Highlights
 
 - Multi-source log ingestion for Linux authentication logs, Windows/Sysmon JSON, Nginx access logs, Suricata EVE JSON, and normalized JSON.
 - Common security event schema across all collectors.
-- YAML detection engine with equality, list, contains, prefix, suffix, numeric, and regular-expression operators.
+- Sigma-compatible YAML subset with equality, lists, contains, prefix, suffix, existence, numeric, and bounded regular-expression operators.
 - Count-based correlation and ordered sequence detection.
 - Alert generation, risk scoring, incident correlation, timelines, notes, assignments, and case status management.
 - MITRE ATT&CK technique and tactic mapping.
@@ -53,20 +57,21 @@ Every starter rule includes a safe test fixture and a MITRE ATT&CK mapping.
 flowchart LR
     A[Linux / Windows / Nginx / Suricata Logs] --> B[Collectors & Parsers]
     B --> C[Normalized Event Schema]
-    C --> D[YAML Detection Engine]
-    D --> E[Alerts]
-    E --> F[Correlation Engine]
-    F --> G[Incidents]
-    D --> H[Detection Tests]
+    C --> D[Rule validation and safe condition parser]
+    D --> E[Selection matching]
+    E --> F[Count and sequence correlation]
+    F --> G[Deduplicated alerts and incidents]
+    D --> H[Positive and negative fixture tests]
     H --> I[Quality Scorecard]
     G --> J[PDF / CSV / JSON Reports]
-    D --> K[MITRE ATT&CK Coverage]
+    D --> K[ATT&CK tag mapping and coverage]
     C --> L[(SQLite / PostgreSQL)]
     E --> L
     G --> L
 ```
 
 More detail is available in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+The normalized field contract and collision precedence are documented in [`docs/EVENT_SCHEMA.md`](docs/EVENT_SCHEMA.md).
 
 ## Quick Start on Kali Linux
 
@@ -139,7 +144,7 @@ Sample files are available in [`sample-data/`](sample-data/).
 
 ### Add a Detection Rule
 
-Rules use a readable YAML format inspired by common detection-as-code practices:
+Rules use a documented [Sigma-compatible subset](docs/SIGMA_COMPATIBILITY.md):
 
 ```yaml
 id: DF-LNX-001
@@ -217,12 +222,15 @@ DetectionForge/
 ```bash
 source .venv/bin/activate
 pytest -q
+python scripts/test_rules.py --json reports/rule-tests.json
 ```
 
-The automated suite covers:
+The automated suite and fixture runner cover:
 
 - Linux, Nginx, and Suricata normalization.
 - Detection matching and regex operators.
+- Safe boolean parsing, malicious conditions, and malformed rule rejection.
+- Count thresholds, timeframe boundaries, entity grouping, ordered sequences, and replay deduplication.
 - Demo ingestion and detection execution.
 - Dashboard, Events, Alerts, Incidents, Rules, Coverage, Quality, and Audit pages.
 - API health and statistics endpoints.
@@ -230,6 +238,8 @@ The automated suite covers:
 - PDF, CSV, and JSON report generation.
 
 See [`docs/VALIDATION.md`](docs/VALIDATION.md) for the verified release results.
+
+Fixture pass rates are test coverage, not real-world detection accuracy. See [Detection quality](docs/DETECTION_QUALITY.md).
 
 ## Security Notes
 
@@ -243,7 +253,7 @@ See [`docs/SECURITY.md`](docs/SECURITY.md).
 
 ## Roadmap
 
-- Native Sigma conversion layer.
+- Broader Sigma aggregation, wildcard, and pipeline compatibility.
 - Streaming collectors and WebSocket event updates.
 - Authentication and role-based access control.
 - Redis-backed task queue for large ingestion jobs.
