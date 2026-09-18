@@ -1,0 +1,47 @@
+name: Portfolio Screenshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/screenshots/**"
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install application and browser
+        run: |
+          pip install -r requirements.txt
+          pip install playwright
+          playwright install --with-deps chromium
+      - name: Seed deterministic demo
+        run: |
+          python scripts/init_db.py
+          python scripts/seed_demo.py --force
+      - name: Start application
+        run: |
+          python run.py > /tmp/detectionforge.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:8000/ && break
+            if [ "$attempt" = "30" ]; then cat /tmp/detectionforge.log; exit 1; fi
+            sleep 1
+          done
+      - name: Capture dashboard
+        run: python scripts/capture_portfolio_screenshot.py
+      - name: Publish screenshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/detectionforge-dashboard.png
+          git diff --cached --quiet || git commit -m "docs: add verified DetectionForge dashboard screenshot"
+          git push

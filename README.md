@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/brand/detectionforge-logo.png" alt="DetectionForge logo" width="170">
+</p>
+
 # DetectionForge
 
 > **Detection engineering and Sigma-compatible rule testing platform for SOC teams.**
@@ -11,7 +15,7 @@
 
 DetectionForge turns normalized security events into deterministic rule matches, count or sequence detections, deduplicated alerts, ATT&CK mappings, and fixture-based quality evidence. It implements a documented Sigma-compatible subset; it does not claim full Sigma compliance or production SIEM readiness.
 
-![DetectionForge dashboard preview](docs/screenshots/dashboard-preview.svg)
+![DetectionForge dashboard](docs/screenshots/detectionforge-dashboard.png)
 
 ## Why this matters
 
